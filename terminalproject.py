@@ -4,6 +4,7 @@ import imp
 import queue 
 import time
 import random
+visited=set()
 
 print("1: " ,"Want to Generate a random maze?")
 print("2: " ,"Want to generate a maze using a maze?")
@@ -44,14 +45,7 @@ def find_start(maze,start):
                 return index,jndex
     return None
 
-visited=set()
-def find_path(maze,stdscr):
-    start="O"
-    end="X"
-    start_pos=find_start(maze,start)
-    if start_pos==None:
-        return "NO START"
-    
+def bfs(maze,stdscr,start_pos,end):
     q=queue.Queue()
     q.put((start_pos,[start_pos]))
     while not q.empty():
@@ -76,9 +70,80 @@ def find_path(maze,stdscr):
             if maze[r][c]=='#':
                 continue
 
-          
             visited.add(neighbor)
             q.put((neighbor,path+[neighbor]))
+
+def dfs(maze,stdscr,start_pos,end):
+    q=[]
+    q.append((start_pos,[start_pos]))
+    while q:
+        current_pos,path=q.pop()
+        row,col=current_pos
+
+        stdscr.clear()
+        print_maze(maze,stdscr,path)
+        time.sleep(0.3)
+        stdscr.refresh()
+
+    
+        if maze[row][col]==end:
+            return path
+        neighbors=find_neighbors(maze,current_pos[0],current_pos[1])
+        
+        for neighbor in neighbors:
+            if neighbor in visited:
+                continue
+            
+            r,c=neighbor
+            if maze[r][c]=='#':
+                continue
+
+            visited.add(neighbor)
+            q.append((neighbor,path+[neighbor]))
+
+
+def find_path(maze,stdscr,algo):
+    start="O"
+    end="X"
+    start_pos=find_start(maze,start)
+    if start_pos==None:
+        return "NO START"
+    
+    if algo=='bfs':
+        bfs(maze,stdscr,start_pos,end)
+    else:
+        dfs(maze,stdscr,start_pos,end)
+    
+    # # q=queue.Queue()
+    # # q.put((start_pos,[start_pos]))
+    # q=[]
+    # q.append((start_pos,[start_pos]))
+    # # while not q.empty():
+    # while q:
+    #     current_pos,path=q.pop()
+    #     row,col=current_pos
+
+    #     stdscr.clear()
+    #     print_maze(maze,stdscr,path)
+    #     time.sleep(0.3)
+    #     stdscr.refresh()
+
+    
+    #     if maze[row][col]==end:
+    #         return path
+    #     neighbors=find_neighbors(maze,current_pos[0],current_pos[1])
+        
+    #     for neighbor in neighbors:
+    #         if neighbor in visited:
+    #             continue
+            
+    #         r,c=neighbor
+    #         if maze[r][c]=='#':
+    #             continue
+
+          
+    #         visited.add(neighbor)
+    #         q.append((neighbor,path+[neighbor]))
 
 
 def find_neighbors(maze,row,col):
@@ -96,12 +161,17 @@ def find_neighbors(maze,row,col):
 
 
 
-def main(stdscr):
+def main(stdscr,algo):
     curses.init_pair(1, curses.COLOR_BLUE, curses.COLOR_BLACK)
     curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
-    
-    
-    find_path(maze,stdscr)
+    find_path(maze,stdscr,algo)
     stdscr.getch()
     
-wrapper(main)
+print("1: " ,"Do you want to use BFS?")
+print("2: " ,"Do you want to use DFS?")
+choice=int(input("Enter your choice: "))
+if choice==1:
+    algo='bfs'
+else:
+    algo='dfs'
+wrapper(main,algo)
